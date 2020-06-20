@@ -76,7 +76,7 @@ if st.checkbox("See source data"):
 
 for choice in choices:
     if choice in ["Multiview"]:
-        st.header(chart_dict[choice][0])
+        st.header("Multiview")
         multi_choice = st.multiselect("Select charts to display:",
                         options=list(multi_options.keys()),
                         default=list(multi_options.keys())[1])
