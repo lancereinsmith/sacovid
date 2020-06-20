@@ -61,7 +61,7 @@ choices = st.sidebar.multiselect("Select individual charts to display:",
                         options=list(chart_dict.keys()),
                         default=list(chart_dict.keys())[:2])
 
-st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click the magnifying glass to select charts to display.  Or, type a keyword in the search bar.')
+st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click the magnifying glass to select charts to display.  Or, type a keyword in the search bar.\n* Remember to scroll down to see all of the charts.')
 
 
 
@@ -76,6 +76,7 @@ if st.checkbox("See source data"):
 
 for choice in choices:
     if choice in ["Multiview"]:
+        st.header(chart_dict[choice][0])
         multi_choice = st.multiselect("Select charts to display:",
                         options=list(multi_options.keys()),
                         default=list(multi_options.keys())[1])
