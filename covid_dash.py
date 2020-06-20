@@ -29,8 +29,8 @@ for col in ['Recovered', 'Hospitalized']:
 ## Create dict for chart options
 chart_dict = {
     "Multiview": ("Multiview Chart"),
-    "Reported Cases": ("Cumulative and Daily Reported Cases", "ReportedCum", "ReportedOn"),
     "Testing Information": ("Cumulative and Daily Testing Information", None, None),
+    "Reported Cases": ("Cumulative and Daily Reported Cases", "ReportedCum", "ReportedOn"),
     "Mortality": ("Cumulative and Daily Mortality Information", "DeathsCum", "Deceased"),
     "Recoveries": ("Cumulative and Daily Recovery Information", "Recovered", "Recovered_Daily"),
     "Hospitalizations": ("Cumulative and Daily Hospitalization Information", "Hospitalized", "Hospitalized_Daily"),
@@ -59,7 +59,7 @@ multi_options = {"Cumulative Reported Cases": "ReportedCum",
 
 choices = st.sidebar.multiselect("Select individual charts to display:",
                         options=list(chart_dict.keys()),
-                        default=list(chart_dict.keys())[:3])
+                        default=list(chart_dict.keys())[:2])
 
 st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click the magnifying glass to select charts to display.  Or, type a keyword in the search bar.')
 
