@@ -78,10 +78,10 @@ for choice in choices:
     if choice in ["Multiview"]:
         multi_choice = st.multiselect("Select charts to display:",
                         options=list(multi_options.keys()),
-                        default=list(multi_options.keys())[0])
+                        default=list(multi_options.keys())[1])
         if len(multi_choice) > 0:
             ax = df[[multi_options[x] for x in multi_choice] ].loc[start_date : end_date + timedelta(days=1)].plot(title = "Multiview Chart")
-            ax.legend(multi_choice);
+            ax.legend(multi_choice)
             st.pyplot()
         else:
             st.subheader("Please select one or more charts to display.")
@@ -104,7 +104,7 @@ for choice in choices:
         df[df['BCTestNegative'].notnull()]['BCTestNegative'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Negative Tests')
         df[df['BCTestPositive'].notnull()]['BCTestPositive'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Positive Tests')
         df[df['BCTestInc'].notnull()]['BCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
-        plt.legend();
+        plt.legend()
         st.pyplot()
 
         df[df['DBCLabTests'].notnull()]['DBCLabTests'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Tests", title = "Daily " + choice)
@@ -112,7 +112,7 @@ for choice in choices:
         df[df['DBCTestPositive'].notnull()]['DBCTestPositive'].loc[start_date : end_date + timedelta(days=1)].abs().plot(kind='area', label='Positive Tests')
         df[df['DBCTestInc'].notnull()]['DBCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
 
-        plt.legend();
+        plt.legend()
         st.pyplot()
 
     elif choice in ["Ventilator Availability", "Staffed Bed Availability"]:
