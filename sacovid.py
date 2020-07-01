@@ -26,11 +26,14 @@ df = df[df.index.notnull()]
 for col in ['Recovered', 'Hospitalized']:
     df[col + "_Daily"] = (df[col] - df[col].shift(1)).dropna()
 
+df["Reported7dMA"] = df["ReportedOn"].rolling(7).mean()
+
 ## Create dict for chart options
 chart_dict = {
     "Multiview": ("Multiview Chart"),
     "Testing Information": ("Cumulative and Daily Testing Information", None, None),
     "Reported Cases": ("Cumulative and Daily Reported Cases", "ReportedCum", "ReportedOn"),
+    "Reported Cases w/ 7d MA": ("Daily Reported Cases with 7d Moving Average", "ReportedOn", "Reported7dMA"),
     "Mortality": ("Cumulative and Daily Mortality Information", "DeathsCum", "Deceased"),
     "Recoveries": ("Cumulative and Daily Recovery Information", "Recovered", "Recovered_Daily"),
     "Hospitalizations": ("Cumulative and Daily Hospitalization Information", "Hospitalized", "Hospitalized_Daily"),
@@ -47,6 +50,7 @@ end_date = st.sidebar.date_input("End Date", value=df.index.max())
 
 multi_options = {"Cumulative Reported Cases": "ReportedCum",
                 "Daily Reported Cases": "ReportedOn",
+                "Reported Cases 7d Moving Avg": "Reported7dMA",
                 "Cumulative Mortality": "DeathsCum",
                 "Daily Mortality": "Deceased",
                 "Cumulative Recoveries": "Recovered",
@@ -67,12 +71,7 @@ st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click the 
 
 ## Render the main screen
 st.title("San Antonio COVID-19 Charts")
-st.subheader(f'The data for these charts were last updated at {df.index.max()}. Source:')
-st.code(URL)
-
-if st.checkbox("See source data"):
-    st.write("Source data:")
-    st.dataframe(df)
+st.subheader(f'The data for these charts were last updated at {df.index.max()}')
 
 for choice in choices:
     if choice in ["Multiview"]:
@@ -80,7 +79,7 @@ for choice in choices:
         st.subheader("This is a unique type of chart which allows overlay of multiple graphs.")
         multi_choice = st.multiselect("Select charts to display:",
                         options=list(multi_options.keys()),
-                        default=list(multi_options.keys())[1])
+                        default=list(multi_options.keys())[1:3])
         if len(multi_choice) > 0:
             ax = df[[multi_options[x] for x in multi_choice] ].loc[start_date : end_date + timedelta(days=1)].plot(title = "Multiview Chart")
             ax.legend(multi_choice)
@@ -95,6 +94,13 @@ for choice in choices:
         ax = df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Daily " + choice, c='r')
         st.pyplot()
 
+    elif choice == "Reported Cases w/ 7d MA":
+        st.header(chart_dict[choice][0])
+        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(label="Reported Cases")
+        df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(label= "7d Moving Avg", c='r')
+        plt.legend()
+        st.pyplot()
+
     elif choice in ["COVID ICU Patients", "COVID Ventilator Patients"]:
         st.header(chart_dict[choice][0])
         df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Daily " + choice)
@@ -105,15 +111,21 @@ for choice in choices:
         df[df['BCLabTests'].notnull()]['BCLabTests'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Tests", title = "Cumulative " + choice)
         df[df['BCTestNegative'].notnull()]['BCTestNegative'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Negative Tests')
         df[df['BCTestPositive'].notnull()]['BCTestPositive'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Positive Tests')
-        df[df['BCTestInc'].notnull()]['BCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
+        # df[df['BCTestInc'].notnull()]['BCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
         plt.legend()
         st.pyplot()
 
         df[df['DBCLabTests'].notnull()]['DBCLabTests'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Tests", title = "Daily " + choice)
         df[df['DBCTestNegative'].notnull()]['DBCTestNegative'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Negative Tests')
         df[df['DBCTestPositive'].notnull()]['DBCTestPositive'].loc[start_date : end_date + timedelta(days=1)].abs().plot(kind='area', label='Positive Tests')
-        df[df['DBCTestInc'].notnull()]['DBCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
+        # df[df['DBCTestInc'].notnull()]['DBCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
 
+        plt.legend()
+        st.pyplot()
+
+        df["ReportedOn"].loc[start_date : end_date + timedelta(days=1)].plot(label="Reported Cases", title="Reported Cases and Daily Postive Tests")
+        df["Reported7dMA"].loc[start_date : end_date + timedelta(days=1)].plot(label= "Reported Cases 7d Moving Avg")
+        df[df['DBCTestPositive'].notnull()]['DBCTestPositive'].loc[start_date : end_date + timedelta(days=1)].abs().plot(kind='line', label='Daily Positive Tests')
         plt.legend()
         st.pyplot()
 
@@ -121,7 +133,7 @@ for choice in choices:
         st.header(chart_dict[choice][0])
         df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total "+chart_dict[choice][3])
         df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Available '+chart_dict[choice][3])
-        plt.legend()
+        plt.legend(loc=2)
         st.pyplot()
 
     elif choice in ["Quarantine"]:
@@ -130,5 +142,12 @@ for choice in choices:
         st.pyplot()
         df[df[chart_dict[choice][2]].notnull()][chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Weekly " + choice, c='r')
         st.pyplot()
+
+st.subheader('Source:')
+st.code(URL)
+
+if st.checkbox("See source data"):
+    st.write("Source data:")
+    st.dataframe(df)
 
 st.sidebar.markdown('&copy 2020, Lance Reinsmith')
