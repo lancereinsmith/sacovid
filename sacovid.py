@@ -7,6 +7,11 @@ import seaborn as sns
 import requests
 from datetime import datetime, timedelta
 
+RED = "#D72827"
+BLUE = "#1F77B4"
+GREEN = "#2AA12B"
+ORANGE = "#FF7F0F"
+
 ## Retrieve data
 URL = 'https://services.arcgis.com/g1fRTDLeMgspWrYp/arcgis/rest/services/vDateCOVID19_Tracker_Public/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
 r = requests.get(URL)
@@ -18,30 +23,34 @@ for row in raw_json['features']:
     input_rows.append(row['attributes'])
 
 df = pd.DataFrame(input_rows)
+
+# Set Date to index as datetime
 df['Date'] = pd.to_datetime(df['Date'], unit='ms')
 df.set_index('Date', inplace=True, drop=True)
+# Get rid of dates without data
 df = df[df.index.notnull()]
 
 ## Create additional columns
-for col in ['Recovered', 'Hospitalized']:
-    df[col + "_Daily"] = (df[col] - df[col].shift(1)).dropna()
-
+# Daily change in recovered cases
+df["Recovered_Daily_Change"] = (df['Recovered'] - df['Recovered'].shift(1)).dropna()
+# Reported cases 7 day moving average
 df["Reported7dMA"] = df["ReportedOn"].rolling(7).mean()
+# Daily Mortality 7 day moving average
+df["Deceased7dMA"] = df["Deceased"].rolling(7).mean()
+# Daily Positive Cases 7 day moving average
+df["DBCTestPositive7dMA"] = df["DBCTestPositive"].rolling(7).mean()
 
 ## Create dict for chart options
 chart_dict = {
+    "Reported Cases": ("Cumulative and Daily Reported Cases", "ReportedCum", "ReportedOn", "Reported7dMA"),
+    "Mortality": ("Cumulative and Daily Mortality Information", "DeathsCum", "Deceased", "Deceased7dMA"),
+    "Testing Information": ("Cumulative and Daily Testing Information", None),
+    "Recoveries": ("Cumulative and Daily Changes in Recovery / Still Ill", "Recovered", "Recovered_Daily_Change", "StillIll"),
+    "ICU Information": ("COVID ICU Patients", "COVIDnICU"),
+    "Ventilator Information": ("COVID Ventilator Patients", "COVIDonVent", "TotalVents", "AvailVent"),
+    "Staffed Bed Availability": ("Staffed Bed Availability Information", "TotalStaffedBeds", "AvailStaffedBeds"),
     "Multiview": ("Multiview Chart"),
-    "Testing Information": ("Cumulative and Daily Testing Information", None, None),
-    "Reported Cases": ("Cumulative and Daily Reported Cases", "ReportedCum", "ReportedOn"),
-    "Reported Cases w/ 7d MA": ("Daily Reported Cases with 7d Moving Average", "ReportedOn", "Reported7dMA"),
-    "Mortality": ("Cumulative and Daily Mortality Information", "DeathsCum", "Deceased"),
-    "Recoveries": ("Cumulative and Daily Recovery Information", "Recovered", "Recovered_Daily"),
-    "Hospitalizations": ("Cumulative and Daily Hospitalization Information", "Hospitalized", "Hospitalized_Daily"),
-    "COVID ICU Patients": ("Daily COVID ICU Patients", "COVIDnICU"),
-    "COVID Ventilator Patients": ("Daily COVID Ventilator Patients", "COVIDonVent"),
-    "Quarantine": ("Cumulative and Weekly Quarantine Information", "EverQuar", "WeekQuar"),
-    "Ventilator Availability": ("Ventilator Availability Information", "TotalVents", "AvailVent", "Ventilators"),
-    "Staffed Bed Availability": ("Staffed Bed Availability Information", "TotalStaffedBeds", "AvailStaffedBeds", "Staffed Beds")
+
 }
 
 ## Sidebar
@@ -53,27 +62,34 @@ multi_options = {"Cumulative Reported Cases": "ReportedCum",
                 "Reported Cases 7d Moving Avg": "Reported7dMA",
                 "Cumulative Mortality": "DeathsCum",
                 "Daily Mortality": "Deceased",
+                "Daily Mortality 7d Moving Avg": "Deceased7dMA",
                 "Cumulative Recoveries": "Recovered",
-                "Daily Recoveries": "Recovered_Daily",
-                "Cumulative Hospitalizations": "Hospitalized",
-                "Daily Hospitalizations": "Hospitalized_Daily",
-                "Daily COVID ICU Patients": "COVIDnICU",
-                "Daily COVID Ventilator Patients":"COVIDonVent"
+                "Daily Change in Recoveries": "Recovered_Daily_Change",
+                "Still Ill Patients": "StillIll",
+                "Daily COVID ICU Census": "COVIDnICU",
+                "Daily COVID Ventilator Census":"COVIDonVent",
+                "Daily Positive Tests": "DBCTestPositive",
+                "Daily Positive Tests, 7d Moving Avg": "DBCTestPositive7dMA"
 }
 
 choices = st.sidebar.multiselect("Select individual charts to display:",
                         options=list(chart_dict.keys()),
-                        default=list(chart_dict.keys())[:2])
+                        default=list(chart_dict.keys())[:3])
 
-st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click the magnifying glass to select charts to display.  Or, type a keyword in the search bar.\n* __Multiview__ allows for viewing multiple graphs in one chart.\n* Remember to scroll down to see all of the charts.')
+st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click in the box below the dates to select individual charts to display.\n'
+                    '* __Multiview__ allows for viewing multiple graphs in one chart.\n'
+                    '* Remember to scroll down to see all of the charts.')
 
 
 
 ## Render the main screen
 st.title("San Antonio COVID-19 Charts")
-st.subheader(f'The data for these charts were last updated at {df.index.max()}')
+st.markdown(f'The data for these charts were last updated on {str(df.index.max()).split()[0]}. '
+            'See HELP in sidebar to the left.')
+st.markdown('')
 
 for choice in choices:
+
     if choice in ["Multiview"]:
         st.header("Multiview")
         st.subheader("This is a unique type of chart which allows overlay of multiple graphs.")
@@ -81,66 +97,76 @@ for choice in choices:
                         options=list(multi_options.keys()),
                         default=list(multi_options.keys())[1:3])
         if len(multi_choice) > 0:
-            ax = df[[multi_options[x] for x in multi_choice] ].loc[start_date : end_date + timedelta(days=1)].plot(title = "Multiview Chart")
+            ax = df[[multi_options[x] for x in multi_choice] ].loc[start_date : end_date + timedelta(days=1)].plot(title="Multiview Chart")
             ax.legend(multi_choice)
             st.pyplot()
         else:
             st.subheader("Please select one or more charts to display.")
 
-    elif choice in ["Reported Cases", "Mortality", "Recoveries", "Hospitalizations"]:
-        st.header(chart_dict[choice][0])
-        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Cumulative " + choice)
-        st.pyplot()
-        ax = df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Daily " + choice, c='r')
-        st.pyplot()
-
-    elif choice == "Reported Cases w/ 7d MA":
-        st.header(chart_dict[choice][0])
-        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(label="Reported Cases")
-        df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(label= "7d Moving Avg", c='r')
-        plt.legend()
-        st.pyplot()
-
-    elif choice in ["COVID ICU Patients", "COVID Ventilator Patients"]:
-        st.header(chart_dict[choice][0])
-        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Daily " + choice)
-        st.pyplot()
-
     elif choice in ["Testing Information"]:
         st.header(chart_dict[choice][0])
-        df[df['BCLabTests'].notnull()]['BCLabTests'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Tests", title = "Cumulative " + choice)
+        df[df['BCLabTests'].notnull()]['BCLabTests'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Tests", title="Cumulative " + choice)
         df[df['BCTestNegative'].notnull()]['BCTestNegative'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Negative Tests')
         df[df['BCTestPositive'].notnull()]['BCTestPositive'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Positive Tests')
-        # df[df['BCTestInc'].notnull()]['BCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
         plt.legend()
         st.pyplot()
 
-        df[df['DBCLabTests'].notnull()]['DBCLabTests'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Tests", title = "Daily " + choice)
+        df[df['DBCLabTests'].notnull()]['DBCLabTests'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Tests", title="Daily " + choice)
         df[df['DBCTestNegative'].notnull()]['DBCTestNegative'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Negative Tests')
         df[df['DBCTestPositive'].notnull()]['DBCTestPositive'].loc[start_date : end_date + timedelta(days=1)].abs().plot(kind='area', label='Positive Tests')
-        # df[df['DBCTestInc'].notnull()]['DBCTestInc'].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Inconclusive Tests')
 
         plt.legend()
         st.pyplot()
 
-        df["ReportedOn"].loc[start_date : end_date + timedelta(days=1)].plot(label="Reported Cases", title="Reported Cases and Daily Postive Tests")
+        df["DBCTestPositive7dMA"].loc[start_date : end_date + timedelta(days=1)].plot(label="Daily Positive Tests 7d Moving Avg", title="Reported Cases and Daily Postive Tests")
         df["Reported7dMA"].loc[start_date : end_date + timedelta(days=1)].plot(label= "Reported Cases 7d Moving Avg")
-        df[df['DBCTestPositive'].notnull()]['DBCTestPositive'].loc[start_date : end_date + timedelta(days=1)].abs().plot(kind='line', label='Daily Positive Tests')
+        df[df['DBCTestPositive'].notnull()]['DBCTestPositive'].loc[start_date : end_date + timedelta(days=1)].abs().plot(kind='area', label='Daily Positive Tests', alpha=0.2)
         plt.legend()
         st.pyplot()
 
-    elif choice in ["Ventilator Availability", "Staffed Bed Availability"]:
+    elif choice in ["Reported Cases", "Mortality"]:
         st.header(chart_dict[choice][0])
-        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total "+chart_dict[choice][3])
-        df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label='Available '+chart_dict[choice][3])
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+
+        ax1.set_ylabel("Daily " + choice, c=BLUE)
+        ax2.set_ylabel("Cumulative " + choice, c=RED, rotation=270)
+
+        l1 = df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax2, c=RED)
+        l2 = df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', ax=ax1, alpha=0.3, label='_nolegend_')
+        l3 = df[chart_dict[choice][3]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax1, c=ORANGE, label=f"Daily {choice}, 7d Moving Avg")
+        ax1.legend()
+        st.pyplot()
+    
+    elif choice in ["Recoveries"]:
+        st.header(chart_dict[choice][0])
+        fig, ax1 = plt.subplots()
+        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(label="Cumulative Recoveries", title="Recoveries")
+        df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(label="Daily Change in Recoveries")
+        plt.legend()
+        st.pyplot()
+        df[chart_dict[choice][3]].loc[start_date : end_date + timedelta(days=1)].plot(title="Patients Who Are Still Ill", c=RED)
+        st.pyplot()
+
+    elif choice in ["ICU Information"]:
+        st.header(chart_dict[choice][0])
+        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(title=f"Daily COVID ICU Census")
+        st.pyplot()
+
+    elif choice in ["Ventilator Information"]:
+        st.header(chart_dict[choice][0])
+        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(title=f"Daily COVID Ventilator Census")
+        st.pyplot()
+        df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Ventilators", title="Ventilator Availability")
+        df[chart_dict[choice][3]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Available Ventilators")
         plt.legend(loc=2)
         st.pyplot()
 
-    elif choice in ["Quarantine"]:
+    elif choice in ["Staffed Bed Availability"]:
         st.header(chart_dict[choice][0])
-        df[df[chart_dict[choice][1]].notnull()][chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Cumulative " + choice)
-        st.pyplot()
-        df[df[chart_dict[choice][2]].notnull()][chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(title = "Weekly " + choice, c='r')
+        df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Total Staffed Beds")
+        df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', label="Available Staffed Beds")
+        plt.legend(loc=2)
         st.pyplot()
 
 st.subheader('Source:')
