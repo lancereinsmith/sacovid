@@ -12,6 +12,14 @@ BLUE = "#1F77B4"
 GREEN = "#2AA12B"
 ORANGE = "#FF7F0F"
 
+def format_func(value, tick=None):
+    if abs(value) < 1000:
+        num_thousands = 0
+    else:
+        num_thousands = 1
+    value = round(value / 1000**num_thousands, 2)
+    return f'{value:g}'+' K'[num_thousands]
+
 ## Retrieve data
 URL = 'https://services.arcgis.com/g1fRTDLeMgspWrYp/arcgis/rest/services/vDateCOVID19_Tracker_Public/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
 r = requests.get(URL)
@@ -130,7 +138,11 @@ for choice in choices:
         ax2 = ax1.twinx()
 
         ax1.set_ylabel("Daily " + choice, c=BLUE)
-        ax2.set_ylabel("Cumulative " + choice, c=RED, rotation=270)
+        ax1.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
+        ax1.tick_params(axis='y', colors=BLUE)
+        ax2.set_ylabel("Cumulative " + choice, c=RED, rotation=270, labelpad=10)
+        ax2.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
+        ax2.tick_params(axis='y', colors=RED)
 
         l1 = df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax2, c=RED)
         l2 = df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', ax=ax1, alpha=0.3, label='_nolegend_')
