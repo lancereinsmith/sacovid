@@ -50,8 +50,8 @@ df["DBCTestPositive7dMA"] = df["DBCTestPositive"].rolling(7).mean()
 
 ## Create dict for chart options
 chart_dict = {
-    "Reported Cases": ("Cumulative and Daily Reported Cases", "ReportedCum", "ReportedOn", "Reported7dMA"),
-    "Mortality": ("Cumulative and Daily Mortality Information", "DeathsCum", "Deceased", "Deceased7dMA"),
+    "Reported Cases": ("Reported Cases", "ReportedCum", "ReportedOn", "Reported7dMA"),
+    "Mortality": ("Mortality Information", "DeathsCum", "Deceased", "Deceased7dMA"),
     "Testing Information": ("Cumulative and Daily Testing Information", None),
     "Recoveries": ("Cumulative and Daily Changes in Recovery / Still Ill", "Recovered", "Recovered_Daily_Change", "StillIll"),
     "ICU Information": ("COVID ICU Patients", "COVIDnICU"),
@@ -144,7 +144,7 @@ for choice in choices:
         ax2.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
         ax2.tick_params(axis='y', colors=RED)
 
-        l1 = df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax2, c=RED)
+        l1 = df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax2, c=RED, title=f"Daily and Cumulative {choice} With 7dMA")
         l2 = df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', ax=ax1, alpha=0.3, label='_nolegend_')
         l3 = df[chart_dict[choice][3]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax1, c=ORANGE, label=f"Daily {choice}, 7d Moving Avg")
         ax1.legend()
