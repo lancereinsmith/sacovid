@@ -127,7 +127,7 @@ for choice in choices:
         st.pyplot()
 
         df["DBCTestPositive7dMA"].loc[start_date : end_date + timedelta(days=1)].plot(label="Daily Positive Tests 7d Moving Avg", title="Reported Cases and Daily Postive Tests")
-        df["Reported7dMA"].loc[start_date : end_date + timedelta(days=1)].plot(label= "Reported Cases 7d Moving Avg")
+        df["Reported7dMA"].loc[start_date : end_date + timedelta(days=1)].plot(label= "Daily eported Cases 7d Moving Avg")
         df[df['DBCTestPositive'].notnull()]['DBCTestPositive'].loc[start_date : end_date + timedelta(days=1)].abs().plot(kind='area', label='Daily Positive Tests', alpha=0.2)
         plt.legend()
         st.pyplot()
