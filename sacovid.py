@@ -77,7 +77,7 @@ multi_options = {"Cumulative Reported Cases": "ReportedCum",
                 "Daily COVID ICU Census": "COVIDnICU",
                 "Daily COVID Ventilator Census":"COVIDonVent",
                 "Daily Positive Tests": "DBCTestPositive",
-                "Daily Positive Tests, 7d Moving Avg": "DBCTestPositive7dMA"
+                "Daily Positive Tests 7d Moving Avg": "DBCTestPositive7dMA"
 }
 
 choices = st.sidebar.multiselect("Select individual charts to display:",
@@ -146,7 +146,7 @@ for choice in choices:
 
         l1 = df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax2, c=RED, title=f"Daily and Cumulative {choice} With 7dMA")
         l2 = df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', ax=ax1, alpha=0.3, label='_nolegend_')
-        l3 = df[chart_dict[choice][3]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax1, c=ORANGE, label=f"Daily {choice}, 7d Moving Avg")
+        l3 = df[chart_dict[choice][3]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax1, c=ORANGE, label=f"Daily {choice} 7d Moving Avg")
         ax1.legend()
         st.pyplot()
     
