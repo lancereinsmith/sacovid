@@ -1,0 +1,101 @@
+rank	county	state	area(km^2)	area(mi^2)	2010census	2018est	abschg	pctchg	seat
+1	Los Angeles	California	10,509.87	4,057.88	9,818,605	10,105,518	286,193	2.92	Los Angeles
+2	Cook	Illinois	2,448.38	945.33	5,194,675	5,180,493	-14,182	-0.27	Chicago
+3	Harris	Texas	4,411.99	1,703.48	4,092,459	4,698,619	606,160	14.81	Houston
+4	Maricopa	Arizona	23,828.26	9,200.14	3,817,117	4,410,824	593,707	15.55	Phoenix
+5	San Diego	California	10,895.12	4,206.63	3,095,313	3,343,364	248,051	8.01	San Diego
+6	Orange	California	2,047.56	790.57	3,010,232	3,185,968	175,736	5.84	Santa Ana
+7	Miami-Dade	Florida	4,915.06	1,897.72	2,496,435	2,761,581	265,146	10.62	Miami
+8	Dallas	Texas	2,256.60	871.28	2,368,139	2,637,772	269,633	11.39	Dallas
+9	Kings	New York	183.41	70.82	2,504,700	2,582,830	78,130	3.12	Brooklyn, NYC
+10	Riverside	California	18,664.70	7,206.48	2,189,641	2,450,758	261,117	11.93	Riverside
+11	Queens	New York	281.10	108.53	2,230,722	2,278,906	48,184	2.16	Queens, NYC
+12	King	Washington	5,479.29	2,115.57	1,931,249	2,233,163	301,914	15.63	Seattle
+13	Clark	Nevada	20,438.71	7,891.43	1,951,269	2,231,647	280,378	14.37	Las Vegas
+14	San Bernardino	California	51,947.23	20,056.94	2,035,210	2,171,603	136,393	6.70	San Bernardino
+15	Tarrant	Texas	2,236.74	863.61	1,809,034	2,084,931	275,897	15.25	Fort Worth
+16	Bexar	Texas	3,211.12	1,239.82	1,714,773	1,986,049	271,276	15.82	San Antonio
+17	Broward	Florida	3,133.33	1,209.79	1,748,066	1,951,260	203,194	11.62	Fort Lauderdale
+18	Santa Clara	California	3,341.34	1,290.10	1,781,642	1,937,570	155,928	8.75	San Jose
+19	Wayne	Michigan	1,585.28	612.08	1,820,584	1,753,893	-66,691	-3.66	Detroit
+20	Alameda	California	1,914.05	739.02	1,510,271	1,666,753	156,482	10.36	Oakland
+21	New York	New York	59.13	22.83	1,585,873	1,628,701	42,828	2.70	Manhattan NYC
+22	Middlesex	Massachusetts	2,118.14	817.82	1,503,085	1,614,714	111,629	7.43	Lowell and Cambridge
+23	Philadelphia	Pennsylvania	347.32	134.10	1,526,006	1,584,138	58,132	3.81	Philadelphia
+24	Sacramento	California	2,498.42	964.64	1,418,788	1,540,975	122,187	8.61	Sacramento
+25	Palm Beach	Florida	5,100	1,970	1,320,134	1,485,941	165,807	12.56	West Palm Beach
+26	Suffolk	New York	2,362.20	912.05	1,493,350	1,481,093	-12,257	-0.82	Riverhead
+27	Hillsborough	Florida	2,642.34	1,020.21	1,229,226	1,436,888	207,662	16.89	Tampa
+28	Bronx	New York	109.03	42.10	1,385,108	1,432,132	47,024	3.39	Bronx, NYC
+29	Nassau	New York	737.41	284.72	1,339,532	1,358,343	18,811	1.40	Mineola
+30	Orange	Florida	2,339.87	903.43	1,145,956	1,348,975	203,019	17.72	Orlando
+31	Franklin	Ohio	1,378.36	532.19	1,163,414	1,310,300	146,886	12.63	Columbus
+32	Hennepin	Minnesota	1,433.79	553.59	1,152,425	1,259,428	107,003	9.29	Minneapolis
+33	Oakland	Michigan	2,247.24	867.66	1,202,362	1,259,201	56,839	4.73	Pontiac
+34	Travis	Texas	2,564.61	990.20	1,024,266	1,248,743	224,477	21.92	Austin
+35	Cuyahoga	Ohio	1,184.12	457.19	1,280,122	1,243,857	-36,265	-2.83	Cleveland
+36	Allegheny	Pennsylvania	1,890.88	730.07	1,223,348	1,218,452	-4,896	-0.40	Pittsburgh
+37	Salt Lake	Utah	1,922.50	742.28	1,029,655	1,152,633	122,978	11.94	Salt Lake City
+38	Fairfax	Virginia	1,012.60	390.97	1,081,726	1,150,795	69,069	6.39	Fairfax
+39	Contra Costa	California	1,854.27	715.94	1,049,025	1,150,215	101,190	9.65	Martinez
+40	Mecklenburg	North Carolina	1,356.75	523.84	919,628	1,093,901	174,273	18.95	Charlotte
+41	Wake	North Carolina	2,163.21	835.22	900,993	1,092,305	191,312	21.23	Raleigh
+42	Montgomery	Maryland	1,272.34	491.25	971,777	1,052,567	80,790	8.31	Rockville
+43	Fulton	Georgia	1,363.98	526.63	920,581	1,050,114	129,533	14.07	Atlanta
+44	Pima	Arizona	23,794.31	9,187.04	980,263	1,039,073	58,810	6.00	Tucson
+45	Collin	Texas	2,178.76	841.22	782,341	1,005,146	222,805	28.48	McKinney
+46	St. Louis	Missouri	1,315.20	507.80	998,954	996,945	-2,009	-0.20	Clayton
+47	Fresno	California	15,431.13	5,957.99	930,450	994,400	63,950	6.87	Fresno
+48	Honolulu	Hawaii	1,555.92	600.74	953,207	980,080	26,873	2.82	Honolulu
+49	Pinellas	Florida	709.14	273.80	916,542	975,280	58,738	6.41	Clearwater
+50	Westchester	New York	1,114.98	430.50	949,113	967,612	18,499	1.95	White Plains
+51	Marion	Indiana	1,026.41	396.30	903,393	954,670	51,277	5.68	Indianapolis
+52	Duval	Florida	1,974.07	762.19	864,263	950,181	85,918	9.94	Jacksonville
+53	Milwaukee	Wisconsin	625.23	241.40	947,735	948,201	466	0.05	Milwaukee
+54	Fairfield	Connecticut	1,618.46	624.89	916,829	943,823	26,994	2.94	Bridgeport
+55	Bergen	New Jersey	603.49	233.01	905,116	936,692	31,576	3.49	Hackensack
+56	Shelby	Tennessee	1,976.61	763.17	927,644	935,764	8,120	0.88	Memphis
+57	DuPage	Illinois	848.22	327.50	916,924	928,589	11,665	1.27	Wheaton
+58	Gwinnett	Georgia	1,114.69	430.38	805,321	927,781	122,460	15.21	Lawrenceville
+59	Erie	New York	2,700.56	1,042.69	919,040	919,719	679	0.07	Buffalo
+60	Prince George's	Maryland	1,250.16	482.69	863,420	909,308	45,888	5.31	Upper Marlboro
+61	Kern	California	21,061.57	8,131.92	839,631	896,764	57,133	6.80	Bakersfield
+62	Hartford	Connecticut	1,903.89	735.10	894,014	892,697	-1,317	-0.15	Hartford
+63	Pierce	Washington	4,324.01	1,669.51	795,225	891,299	96,074	12.08	Tacoma
+64	San Francisco	California	121.40	46.87	805,235	883,305	78,070	9.70	San Francisco
+65	Macomb	Michigan	1,241.18	479.22	840,978	874,759	33,781	4.02	Mount Clemens
+66	Hidalgo	Texas	4,068.52	1,570.87	774,769	865,939	91,170	11.77	Edinburg
+67	Denton	Texas	2,275.13	878.43	662,614	859,064	196,450	29.65	Denton
+68	New Haven	Connecticut	1,565.66	604.51	862,477	857,620	-4,857	-0.56	New Haven
+69	Ventura	California	4,773.69	1,843.13	823,318	850,967	27,649	3.36	Ventura
+70	El Paso	Texas	2,622.86	1,012.69	800,647	840,758	40,111	5.01	El Paso
+71	Worcester	Massachusetts	3,912.88	1,510.77	798,552	830,839	32,287	4.04	Worcester
+72	Middlesex	New Jersey	800.08	308.91	809,858	829,685	19,827	2.45	New Brunswick
+73	Montgomery	Pennsylvania	1,251.07	483.04	799,874	828,604	28,730	3.59	Norristown
+74	Baltimore	Maryland	1,549.59	598.30	805,029	828,431	23,402	2.91	Towson
+75	Hamilton	Ohio	1,051.30	405.91	802,374	816,684	14,310	1.78	Cincinnati
+76	Snohomish	Washington	5,406.01	2,087.27	713,335	814,901	101,566	14.24	Everett
+77	Multnomah	Oregon	1,117.05	431.30	735,334	811,880	76,546	10.41	Portland
+78	Suffolk	Massachusetts	150.62	58.15	722,023	807,252	85,229	11.80	Boston
+79	Essex	New Jersey	326.89	126.21	783,969	799,767	15,798	2.02	Newark
+80	Oklahoma	Oklahoma	1,835.83	708.82	718,633	792,582	73,949	10.29	Oklahoma City
+81	Essex	Massachusetts	1,275.73	492.56	743,159	790,638	47,479	6.39	Salem and Lawrence
+82	Fort Bend	Texas	2,292	885	585,375	787,858	202,483	34.59	Richmond
+83	Jefferson	Kentucky	985.27	380.42	741,096	770,517	29,421	3.97	Louisville
+84	San Mateo	California	1,161.37	448.41	718,451	769,545	51,094	7.11	Redwood City
+85	Cobb	Georgia	879.43	339.55	688,078	756,865	68,787	10.00	Marietta
+86	DeKalb	Georgia	693.03	267.58	691,893	756,558	64,665	9.35	Decatur
+87	Lee	Florida	2,031.88	784.51	618,754	754,610	135,856	21.96	Fort Myers
+88	San Joaquin	California	3,603.51	1,391.32	685,306	752,660	67,354	9.83	Stockton
+89	Monroe	New York	1,702.15	657.21	744,344	742,474	-1,870	-0.25	Rochester
+90	Denver	Colorado	401.36	154.97	600,158	716,492	116,334	19.38	Denver
+91	El Paso	Colorado	5,508.39	2,126.80	622,263	713,856	91,593	14.72	Colorado Springs
+92	Polk	Florida	4,660	1,798	602,095	708,009	105,914	17.59	Bartow
+93	Norfolk	Massachusetts	1,025.91	396.11	670,850	705,388	34,538	5.15	Dedham
+94	District of Columbia	District of Columbia	177.0	68.34	601,723	702,455	100,732	16.74	Wasington, D.C.
+95	Lake	Illinois	1,149.10	443.67	703,462	700,832	-2,630	-0.37	Waukegan
+96	Jackson	Missouri	1,565.55	604.46	674,158	700,307	26,149	3.88	Independence and Kansas City
+97	Davidson	Tennessee	1,305.44	504.03	626,681	692,587	65,906	10.52	Nashville
+98	Will	Illinois	2,167.58	836.91	677,560	692,310	14,750	2.18	Joliet
+99	Bernalillo	New Mexico	3,006.53	1,160.83	662,564	678,701	16,137	2.44	Albuquerque
+100	Hudson	New Jersey	119.63	46.19	634,266	676,061	41,795	6.59	Jersey City

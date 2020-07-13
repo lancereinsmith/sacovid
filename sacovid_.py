@@ -3,56 +3,20 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.style as style
-import seaborn as sns
-
 import requests
 from datetime import datetime, timedelta
-import random
 
-# style.use('bmh')
-
+## Global constants and variables
 RED = "#D72827"
 BLUE = "#1F77B4"
 GREEN = "#2AA12B"
 ORANGE = "#FF7F0F"
 
-def format_func(value, tick=None):
-    if abs(value) < 1000:
-        num_thousands = 0
-    else:
-        num_thousands = 1
-    value = round(value / 1000**num_thousands, 2)
-    return f'{value:g}'+' K'[num_thousands]
+SA_URL = 'https://services.arcgis.com/g1fRTDLeMgspWrYp/arcgis/rest/services/vDateCOVID19_Tracker_Public/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
 
-## Retrieve data
-URL = 'https://services.arcgis.com/g1fRTDLeMgspWrYp/arcgis/rest/services/vDateCOVID19_Tracker_Public/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
-r = requests.get(URL)
-raw_json = r.json()
+state_pops = pd.read_csv('states.csv', index_col=0)
 
-## Parse data
-input_rows = []
-for row in raw_json['features']:
-    input_rows.append(row['attributes'])
-
-df = pd.DataFrame(input_rows)
-
-# Set Date to index as datetime
-df['Date'] = pd.to_datetime(df['Date'], unit='ms')
-df.set_index('Date', inplace=True, drop=True)
-# Get rid of dates without data
-df = df[df.index.notnull()]
-
-## Create additional columns
-# Daily change in recovered cases
-df["Recovered_Daily_Change"] = (df['Recovered'] - df['Recovered'].shift(1)).dropna()
-# Reported cases 7 day moving average
-df["Reported7dMA"] = df["ReportedOn"].rolling(7).mean()
-# Daily Mortality 7 day moving average
-df["Deceased7dMA"] = df["Deceased"].rolling(7).mean()
-# Daily Positive Cases 7 day moving average
-df["DBCTestPositive7dMA"] = df["DBCTestPositive"].rolling(7).mean()
-
-## Create dict for chart options
+## Create dict for chart menu options
 chart_dict = {
     "Reported Cases": ("Reported Cases", "ReportedCum", "ReportedOn", "Reported7dMA"),
     "Mortality": ("Mortality Information", "DeathsCum", "Deceased", "Deceased7dMA"),
@@ -62,14 +26,10 @@ chart_dict = {
     "Ventilator Information": ("COVID Ventilator Patients", "COVIDonVent", "TotalVents", "AvailVent"),
     "Staffed Bed Availability": ("Staffed Bed Availability Information", "TotalStaffedBeds", "AvailStaffedBeds"),
     "Multiview": ("Multiview Chart"),
-
 }
 
-## Sidebar
-start_date = st.sidebar.date_input("Start Date", value=datetime(2020, 3, 19))
-end_date = st.sidebar.date_input("End Date", value=df.index.max())
-
-multi_options = {"Cumulative Reported Cases": "ReportedCum",
+## Multiview chart options
+multiview_options = {"Cumulative Reported Cases": "ReportedCum",
                 "Daily Reported Cases": "ReportedOn",
                 "Reported Cases 7d Moving Avg": "Reported7dMA",
                 "Cumulative Mortality": "DeathsCum",
@@ -84,32 +44,80 @@ multi_options = {"Cumulative Reported Cases": "ReportedCum",
                 "Daily Positive Tests 7d Moving Avg": "DBCTestPositive7dMA"
 }
 
-choices = st.sidebar.multiselect("Select individual charts to display:",
-                        options=list(chart_dict.keys()),
-                        default=list(chart_dict.keys())[:3])
+state_graph_types = ['positive', 'positive_per100k', 'death', 'death_per100k']
 
-st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click in the box below the dates to select individual charts to display.\n'
-                    '* __Multiview__ allows for viewing multiple graphs in one chart.\n'
-                    '* Remember to scroll down to see all of the charts.')
+def format_func(value, tick=None):
+    if abs(value) < 1000:
+        num_thousands = 0
+    else:
+        num_thousands = 1
+    value = round(value / 1000**num_thousands, 2)
+    return f'{value:g}'+' K'[num_thousands]
 
+def fetch_san_antonio():
+    ## Retrieve json data
+    r = requests.get(SA_URL)
+    raw_json = r.json()
 
+    ## Parse json data
+    input_rows = []
+    for row in raw_json['features']:
+        input_rows.append(row['attributes'])
 
-## Render the main screen
-st.title("San Antonio COVID-19 Charts")
-st.markdown(f'The data for these charts were last updated on {str(df.index.max()).split()[0]}. '
-            'See HELP in sidebar to the left.')
-st.markdown('')
+    ## Load into DataFrame
+    df = pd.DataFrame(input_rows)
 
-for choice in choices:
+    # Set Date to index as datetime
+    df['Date'] = pd.to_datetime(df['Date'], unit='ms')
+    df.set_index('Date', inplace=True, drop=True)
+    # Get rid of dates without data
+    df = df[df.index.notnull()]
 
+    ## Create additional columns
+    # Daily change in recovered cases
+    df["Recovered_Daily_Change"] = (df['Recovered'] - df['Recovered'].shift(1)).dropna()
+    # Reported cases 7 day moving average
+    df["Reported7dMA"] = df["ReportedOn"].rolling(7).mean()
+    # Daily Mortality 7 day moving average
+    df["Deceased7dMA"] = df["Deceased"].rolling(7).mean()
+    # Daily Positive Cases 7 day moving average
+    df["DBCTestPositive7dMA"] = df["DBCTestPositive"].rolling(7).mean()
+
+    return df
+
+df = fetch_san_antonio()
+
+def fetch_states(states):
+    state_dict = {}
+    for state in states:
+        population =state_pops.loc[state]['2018 Population']
+        df = pd.read_json(f'https://covidtracking.com/api/v1/states/{state.lower()}/daily.json')
+        df['date'] = pd.to_datetime(df['date'], format="%Y%m%d")
+        df.set_index('date', inplace=True)
+        df.sort_index(ascending=True, inplace=True)
+        df['positive_7dMA'] = df['positive'].rolling(7).mean()
+        df['death_7dMA'] = df['death'].rolling(7).mean()
+        df['positive_per100k'] = df['positive']/population*100000
+        df['death_per100k'] = df['death']/population*100000
+        state_dict[state] = df
+    return state_dict
+
+def make_state_graphs(state_dict, state_graph_types):
+    for graph_type in state_graph_types:
+        for state, df in state_dict.items():
+            df[graph_type].plot(label=state.upper())
+        plt.legend([key.upper() for key in state_dict.keys()], loc='upper left')
+        plt.show()
+
+def make_chart(choice, start_date, end_date):
     if choice in ["Multiview"]:
         st.header("Multiview")
         st.subheader("This is a unique type of chart which allows overlay of multiple graphs.")
         multi_choice = st.multiselect("Select charts to display:",
-                        options=list(multi_options.keys()),
-                        default=list(multi_options.keys())[1:3])
+                        options=list(multiview_options.keys()),
+                        default=list(multiview_options.keys())[1:3])
         if len(multi_choice) > 0:
-            ax = df[[multi_options[x] for x in multi_choice] ].loc[start_date : end_date + timedelta(days=1)].plot(title="Multiview Chart")
+            ax = df[[multiview_options[x] for x in multi_choice] ].loc[start_date : end_date + timedelta(days=1)].plot(title="Multiview Chart")
             ax.legend(multi_choice)
             st.pyplot()
         else:
@@ -185,11 +193,37 @@ for choice in choices:
         plt.legend(loc=2)
         st.pyplot()
 
-st.subheader('Source:')
-st.code(URL)
+def build_site():
+    start_date = st.sidebar.date_input("Start Date", value=datetime(2020, 3, 19))
+    end_date = st.sidebar.date_input("End Date", value=df.index.max())
 
-if st.checkbox("See source data"):
-    st.write("Source data:")
-    st.dataframe(df)
+    choices = st.sidebar.multiselect("Select individual charts to display:",
+                            options=list(chart_dict.keys()),
+                            default=list(chart_dict.keys())[:3])
 
-st.sidebar.markdown('&copy 2020, Lance Reinsmith')
+    st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click in the box below the dates to select individual charts to display.\n'
+                        '* __Multiview__ allows for viewing multiple graphs in one chart.\n'
+                        '* Remember to scroll down to see all of the charts.')
+
+
+    ## Render the main screen
+    st.title("San Antonio COVID-19 Charts")
+    st.markdown(f'The data for these charts were last updated on {str(df.index.max()).split()[0]}. '
+                'See HELP in sidebar to the left.')
+    st.markdown('')
+
+    for choice in choices:
+        make_chart(choice, start_date, end_date)
+
+    st.subheader('Source:')
+    st.code(SA_URL)
+
+    if st.checkbox("See source data"):
+        st.write("Source data:")
+        st.dataframe(df)
+
+    st.sidebar.markdown('&copy 2020, Lance Reinsmith')
+
+
+if __name__ == "__main__":
+    build_site()
