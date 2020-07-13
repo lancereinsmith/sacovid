@@ -3,13 +3,10 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.style as style
-import seaborn as sns
 
 import requests
 from datetime import datetime, timedelta
-import random
 
-# style.use('bmh')
 
 RED = "#D72827"
 BLUE = "#1F77B4"
