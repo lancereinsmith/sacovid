@@ -51,10 +51,10 @@ multiview_options = {"Cumulative Reported Cases": "ReportedCum",
 state_graph_types = {
                     'positive': "Total Confirmed Cases", 
                     'positive_per100k': "Confirmed Cases per 100K Population", 
-                    'positiveIncrease_7dMA': "Daily Cases 7d Moving Average",
+                    'positiveIncrease_7dMA': "Daily New Cases 7d Moving Average",
                     'death': "Total Confirmed Deaths", 
                     'death_per100k': "Confirmed Deaths per 100K Population",
-                    'deathIncrease_7dMA': "Daily Deaths 7d Moving Average",
+                    'deathIncrease_7dMA': "Daily New Deaths 7d Moving Average",
                     'testPositivity_7dMA': "Test Positivity Rate 7d Moving Average(%)"
                     }
 
@@ -135,7 +135,7 @@ def make_state_graphs(state_dict, state_graph_types):
             df[graph_type].plot(label=state.upper(), title=graph_desc, figsize=(8,6))
         if graph_type == "testPositivity_7dMA":
             plt.ylim(0,100)
-            plt.xlabel("These data are not likely reliable earlier on when testing was less common.")
+            plt.xlabel("Data are not likely reliable on earlier dates when testing was less available.")
         else:
             plt.xlabel("Date")
         plt.legend([key.upper() for key in state_dict.keys()], loc='upper left')
