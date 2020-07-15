@@ -129,10 +129,10 @@ state_pops = fetch_state_pops()
 ############## Graph Drawing Functions #################
 ########################################################
 
-def make_state_graphs(state_dict, state_graph_types):
+def make_state_graphs(state_dict, state_graph_types, start_date, end_date):
     for graph_type, graph_desc in state_graph_types.items():
         for state, df in state_dict.items():
-            df[graph_type].plot(label=state.upper(), title=graph_desc, figsize=(8,6))
+            df[graph_type].loc[start_date : end_date + timedelta(days=1)].plot(label=state.upper(), title=graph_desc, figsize=(8,6))
         if graph_type == "testPositivity_7dMA":
             plt.ylim(0,100)
             plt.xlabel("Data are not likely reliable on earlier dates when testing was less available.")
@@ -165,7 +165,7 @@ def make_sa_chart(df, choice, start_date, end_date):
         if len(state_names) > 0:
             state_abbrevs = state_pops.index[state_pops['State'].isin(state_names)].tolist()   
             state_dict = fetch_states(state_abbrevs)
-            make_state_graphs(state_dict, state_graph_types)
+            make_state_graphs(state_dict, state_graph_types, start_date, end_date)
         else:
             st.subheader("Please select one or more states to display.")
 
