@@ -28,6 +28,10 @@ chart_dict = {
     "Multistate Comparison": ("Comparison of Multiple States")
 }
 
+preset_dict = {
+    "Daily Snapshot": ["Reported Cases 7dMA","Daily Mortality 7dMA","Daily COVID ICU Census","Daily COVID Ventilator Census"],
+}
+
 ## Multiview chart options
 multiview_options = {"Cumulative Reported Cases": "ReportedCum",
                 "Daily Reported Cases": "ReportedOn",
@@ -153,6 +157,14 @@ def make_sa_chart(df, choice, start_date, end_date):
         else:
             st.subheader("Please select one or more charts to display.")
 
+    elif choice in preset_dict.keys():
+        st.header("Preset: " + choice)
+        multi_choice = preset_dict[choice]
+        if len(multi_choice) > 0:
+            ax = df[[multiview_options[x] for x in multi_choice] ].loc[start_date : end_date + timedelta(days=1)].plot(title="Multiview Chart")
+            ax.legend(multi_choice)
+            st.pyplot()
+
     elif choice in ["Multistate Comparison"]:
         st.header(chart_dict[choice])
         st.subheader("These charts allow comparison between different states using raw and population-adjusted data.")
@@ -258,9 +270,14 @@ def build_site():
     start_date = st.sidebar.date_input("Start Date", value=datetime(2020, 3, 19))
     end_date = st.sidebar.date_input("End Date", value=sa_df.index.max())
 
+    presets = st.sidebar.multiselect("Select preset charts to display:",
+                            options=list(preset_dict.keys()))
+
     choices = st.sidebar.multiselect("Select individual charts to display:",
                             options=list(chart_dict.keys()),
                             default=list(chart_dict.keys())[:3])
+
+    choices = presets + choices
 
     st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click in the box below the dates to select individual charts to display.\n'
                         '* __Multiview__ allows for viewing multiple graphs in one chart.\n'
