@@ -140,3 +140,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Specific files
+covid_tutorial.py
+notes.txt
