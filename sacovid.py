@@ -73,7 +73,7 @@ def format_func(value, tick=None):
 ############## Data Fetch Functions ####################
 ########################################################
 
-@st.cache
+# @st.cache
 def fetch_san_antonio():
     ## Retrieve json data
     r = requests.get(SA_URL)
