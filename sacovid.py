@@ -290,7 +290,8 @@ def build_site():
 
     st.sidebar.markdown('### HELP:\n* Enter your start and stop dates.\n* Click in the box below the dates to select individual charts to display.\n'
                         '* __Multiview__ allows for viewing multiple graphs in one chart.\n'
-                        '* Remember to scroll down to see all of the charts.')
+                        '* __Multistate Comparison__ allows comparison between different states using raw and population-adjusted data.\n'
+                        '* Charts display in the order they are selected.  __Remember to scroll down to see all of the charts.__')
 
 
     ## Render the main screen
@@ -310,7 +311,7 @@ def build_site():
     st.markdown('https://covidtracking.com/')
 
     st.sidebar.markdown('&copy 2020, Lance Reinsmith')
-    st.write(f"Page render time: {time.time()-start_time} sec")
+    st.write(f"Page render time: {round(time.time()-start_time, 4)} sec")
 
 if __name__ == "__main__":
     build_site()
