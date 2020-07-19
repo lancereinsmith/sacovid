@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import requests
 from datetime import datetime, timedelta
+import time
 
 ########################################################
 ############ Global constants and variables ############
@@ -73,7 +74,7 @@ def format_func(value, tick=None):
 ############## Data Fetch Functions ####################
 ########################################################
 
-# @st.cache
+@st.cache(ttl=60*6)
 def fetch_san_antonio():
     ## Retrieve json data
     r = requests.get(SA_URL)
@@ -107,21 +108,18 @@ def fetch_state_pops():
     return pd.read_csv('states.csv', index_col=0)
 
 @st.cache
-def fetch_states(state_abbrevs):
-    state_dict = {}
-    for state in state_abbrevs:
-        population =state_pops.loc[state]['2018 Population']
-        df = pd.read_json(f'https://covidtracking.com/api/v1/states/{state.lower()}/daily.json')
-        df['date'] = pd.to_datetime(df['date'], format="%Y%m%d")
-        df.set_index('date', inplace=True)
-        df.sort_index(ascending=True, inplace=True)
-        for field in ['positive', 'positiveIncrease', 'death', 'deathIncrease']:
-            df[field+'_7dMA'] = df[field].rolling(7).mean()
-            if field in ['positive', 'death']:
-                df[field + '_per100k'] = df[field]/population*100000
-        df['testPositivity_7dMA'] = (df['positiveIncrease'] / df['totalTestResultsIncrease']).rolling(7).mean() * 100
-        state_dict[state] = df
-    return state_dict
+def fetch_state(state_abbrev):
+    population =state_pops.loc[state_abbrev]['2018 Population']
+    df = pd.read_json(f'https://covidtracking.com/api/v1/states/{state_abbrev.lower()}/daily.json')
+    df['date'] = pd.to_datetime(df['date'], format="%Y%m%d")
+    df.set_index('date', inplace=True)
+    df.sort_index(ascending=True, inplace=True)
+    for field in ['positive', 'positiveIncrease', 'death', 'deathIncrease']:
+        df[field+'_7dMA'] = df[field].rolling(7).mean()
+        if field in ['positive', 'death']:
+            df[field + '_per100k'] = df[field]/population*100000
+    df['testPositivity_7dMA'] = (df['positiveIncrease'] / df['totalTestResultsIncrease']).rolling(7).mean() * 100
+    return df
 
 sa_df = fetch_san_antonio()
 state_pops = fetch_state_pops()
@@ -173,7 +171,10 @@ def make_sa_chart(df, choice, start_date, end_date):
                         default=state_pops['State'].tolist()[:4])
         if len(state_names) > 0:
             state_abbrevs = state_pops.index[state_pops['State'].isin(state_names)].tolist()   
-            state_dict = fetch_states(state_abbrevs)
+            state_dict = {}
+            for state_abbrev in state_abbrevs:
+                state_df = fetch_state(state_abbrev)
+                state_dict[state_abbrev] = state_df
             make_state_graphs(state_dict, state_graph_types, start_date, end_date)
         else:
             st.subheader("Please select one or more states to display.")
@@ -267,6 +268,7 @@ def make_sa_chart(df, choice, start_date, end_date):
 ########################################################
 
 def build_site():
+    start_time = time.time()
     start_date = st.sidebar.date_input("Start Date", value=datetime(2020, 3, 19))
     end_date = st.sidebar.date_input("End Date", value=sa_df.index.max())
 
@@ -301,6 +303,7 @@ def build_site():
     st.markdown('https://covidtracking.com/')
 
     st.sidebar.markdown('&copy 2020, Lance Reinsmith')
+    st.write(f"Site render time: {time.time()-start_time} sec")
 
 if __name__ == "__main__":
     build_site()
