@@ -34,31 +34,34 @@ preset_dict = {
 }
 
 ## Multiview chart options
-multiview_options = {"Cumulative Reported Cases": "ReportedCum",
-                "Daily Reported Cases": "ReportedOn",
-                "Reported Cases 7dMA": "Reported7dMA",
-                "Cumulative Mortality": "DeathsCum",
-                "Daily Mortality": "Deceased",
-                "Daily Mortality 7dMA": "Deceased7dMA",
-                "Cumulative Recoveries": "Recovered",
-                "Daily Change in Recoveries": "Recovered_Daily_Change",
-                "Still Ill Patients": "StillIll",
-                "Daily COVID ICU Census": "COVIDnICU",
-                "Daily COVID Ventilator Census":"COVIDonVent",
-                "Daily Positive Tests": "DBCTestPositive",
-                "Daily Positive Tests 7dMA": "DBCTestPositive7dMA",
-                "Test Positivity Rate 7dMA (%)": "TestPositivityRate"
+multiview_options = {
+    "Cumulative Reported Cases": "ReportedCum",
+    "Daily Reported Cases": "ReportedOn",
+    "Reported Cases 7dMA": "Reported7dMA",
+    "Cumulative Mortality": "DeathsCum",
+    "Daily Mortality": "Deceased",
+    "Daily Mortality 7dMA": "Deceased7dMA",
+    "Cumulative Recoveries": "Recovered",
+    "Daily Change in Recoveries": "Recovered_Daily_Change",
+    "Still Ill Patients": "StillIll",
+    "Daily COVID ICU Census": "COVIDnICU",
+    "Daily COVID Ventilator Census":"COVIDonVent",
+    "Daily Positive Tests": "DBCTestPositive",
+    "Daily Positive Tests 7dMA": "DBCTestPositive7dMA",
+    "Test Positivity Rate 7dMA (%)": "TestPositivityRate"
 }
 
 state_graph_types = {
-                    'positive': "Total Confirmed Cases", 
-                    'positive_per100k': "Confirmed Cases per 100K Population", 
-                    'positiveIncrease_7dMA': "Daily New Cases 7d Moving Average",
-                    'death': "Total Confirmed Deaths", 
-                    'death_per100k': "Confirmed Deaths per 100K Population",
-                    'deathIncrease_7dMA': "Daily New Deaths 7d Moving Average",
-                    'testPositivity_7dMA': "Test Positivity Rate 7d Moving Average(%)"
-                    }
+    "Total Confirmed Cases": 'positive', 
+    "Confirmed Cases per 100K Population": 'positive_per100k',
+    "Daily New Cases 7d Moving Average": 'positiveIncrease_7dMA',
+    "Daily New Cases per 100K Pop, 7dMA": 'positiveIncrease_7dMA_per100k',
+    "Total Confirmed Deaths": 'death', 
+    "Confirmed Deaths per 100K Population": 'death_per100k',
+    "Daily New Deaths 7d Moving Average": 'deathIncrease_7dMA',
+    "Daily New Deaths per 100K Pop, 7dMA": 'deathIncrease_7dMA_per100k',
+    "Test Positivity Rate 7d Moving Average(%)": 'testPositivity_7dMA'
+}
 
 
 ########################################################
@@ -114,10 +117,11 @@ def fetch_state(state_abbrev):
     df['date'] = pd.to_datetime(df['date'], format="%Y%m%d")
     df.set_index('date', inplace=True)
     df.sort_index(ascending=True, inplace=True)
-    for field in ['positive', 'positiveIncrease', 'death', 'deathIncrease']:
+    for field in ['positiveIncrease', 'deathIncrease']:
         df[field+'_7dMA'] = df[field].rolling(7).mean()
-        if field in ['positive', 'death']:
-            df[field + '_per100k'] = df[field]/population*100000
+        df[field + '_7dMA_per100k'] = df[field+'_7dMA']/population*100000
+    for field in ['positive', 'death']:
+        df[field + '_per100k'] = df[field]/population*100000
     df['testPositivity_7dMA'] = (df['positiveIncrease'] / df['totalTestResultsIncrease']).rolling(7).mean() * 100
     return df
 
@@ -129,10 +133,13 @@ state_pops = fetch_state_pops()
 ########################################################
 
 def make_state_graphs(state_dict, state_graph_types, start_date, end_date):
-    for graph_type, graph_desc in state_graph_types.items():
+    graph_descs = st.multiselect("Select graphs to display:", 
+                    options=list(state_graph_types.keys()),
+                    default=[list(state_graph_types.keys())[i] for i in [3,1,7,5,8]])
+    for graph_desc in graph_descs:
         for state, df in state_dict.items():
-            df[graph_type].loc[start_date : end_date + timedelta(days=1)].plot(label=state.upper(), title=graph_desc, figsize=(8,6))
-        if graph_type == "testPositivity_7dMA":
+            df[state_graph_types[graph_desc]].loc[start_date : end_date + timedelta(days=1)].plot(label=state.upper(), title=graph_desc, figsize=(8,6))
+        if graph_desc == "Test Positivity Rate 7d Moving Average(%)":
             plt.ylim(0,100)
             plt.xlabel("Data are not likely reliable on earlier dates when testing was less available.")
         else:
@@ -303,7 +310,7 @@ def build_site():
     st.markdown('https://covidtracking.com/')
 
     st.sidebar.markdown('&copy 2020, Lance Reinsmith')
-    st.write(f"Site render time: {time.time()-start_time} sec")
+    st.write(f"Page render time: {time.time()-start_time} sec")
 
 if __name__ == "__main__":
     build_site()
