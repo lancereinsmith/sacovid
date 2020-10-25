@@ -5,6 +5,7 @@ import requests
 from datetime import datetime, timedelta
 import time
 
+
 ########################################################
 ############ Global constants and variables ############
 ########################################################
@@ -15,6 +16,8 @@ GREEN = "#2AA12B"
 ORANGE = "#FF7F0F"
 
 SA_URL = 'https://opendata.arcgis.com/datasets/48667a23f3b7468d8cd91afce7a6d047_0.geojson'
+
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 ## Create dict for chart menu options
 chart_dict = {
@@ -30,7 +33,7 @@ chart_dict = {
 }
 
 preset_dict = {
-    "Daily Snapshot": ["otal_case_7dMA","deaths_7dMA","strac_covid_positive_in_icu","strac_covid_positive_on_ventila"],
+    "Daily Snapshot": ["Reported Cases 7dMA", "Daily Mortality 7dMA", "Daily COVID ICU Census", "Daily COVID Ventilator Census"],
 }
 
 ## Multiview chart options
@@ -86,6 +89,7 @@ def callAPI():
 @st.cache(ttl=60*6)
 def fetch_san_antonio():
     df = callAPI()
+    df.fillna(0, inplace=True)
     # Set Date to index as datetime
     df['reporting_date'] = pd.to_datetime(df['reporting_date'])
     df.set_index('reporting_date', inplace=True, drop=True)
@@ -93,15 +97,15 @@ def fetch_san_antonio():
     df = df[df.index.notnull()]
     ## Create additional columns
     # Daily change in recovered cases
-    df["Recovered_Daily_Change"] = (df['Recovered'] - df['Recovered'].shift(1)).dropna()
+    # df["Recovered_Daily_Change"] = (df['Recovered'] - df['Recovered'].shift(1)).dropna()
     # Reported cases 7 day moving average
     df["total_case_7dMA"] = df["total_case_daily_change"].rolling(7).mean()
     # Daily Mortality 7 day moving average
     df["deaths_7dMA"] = df["deaths_daily_change"].rolling(7).mean()
     # Daily Positive Cases 7 day moving average
-    df["DBCTestPositive7dMA"] = df["DBCTestPositive"].rolling(7).mean()
+    # df["DBCTestPositive7dMA"] = df["DBCTestPositive"].rolling(7).mean()
     # Test positivity rate
-    df["TestPositivityRate"] = (df["DBCTestPositive"] / df["DBCLabTests"]).rolling(7).mean()*100
+    # df["TestPositivityRate"] = (df["DBCTestPositive"] / df["DBCLabTests"]).rolling(7).mean()*100
     return df
 
 @st.cache
