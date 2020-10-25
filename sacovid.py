@@ -14,41 +14,41 @@ BLUE = "#1F77B4"
 GREEN = "#2AA12B"
 ORANGE = "#FF7F0F"
 
-SA_URL = 'https://services.arcgis.com/g1fRTDLeMgspWrYp/arcgis/rest/services/vDateCOVID19_Tracker_Public/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
+SA_URL = 'https://opendata.arcgis.com/datasets/48667a23f3b7468d8cd91afce7a6d047_0.geojson'
 
 ## Create dict for chart menu options
 chart_dict = {
-    "Reported Cases": ("Reported Cases", "ReportedCum", "ReportedOn", "Reported7dMA"),
-    "Mortality": ("Mortality Information", "DeathsCum", "Deceased", "Deceased7dMA"),
-    "Testing Information": ("Cumulative and Daily Testing Information", None),
-    "Recoveries": ("Cumulative and Daily Changes in Recovery / Still Ill", "Recovered", "Recovered_Daily_Change", "StillIll"),
-    "ICU Information": ("COVID ICU Patients", "COVIDnICU"),
-    "Ventilator Information": ("COVID Ventilator Patients", "COVIDonVent", "TotalVents", "AvailVent"),
-    "Staffed Bed Availability": ("Staffed Bed Availability Information", "TotalStaffedBeds", "AvailStaffedBeds"),
+    "Reported Cases": ("Reported Cases", "total_case_cumulative", "total_case_daily_change", "total_case_7dMA"),
+    "Mortality": ("Mortality Information", "deaths_cumulative", "deaths_daily_change", "deaths_7dMA"),
+    # "Testing Information": ("Cumulative and Daily Testing Information", None),
+    # "Recoveries": ("Cumulative and Daily Changes in Recovery / Still Ill", "Recovered", "Recovered_Daily_Change", "StillIll"),
+    "ICU Information": ("COVID ICU Patients", "strac_covid_positive_in_icu"),
+    "Ventilator Information": ("COVID Ventilator Patients", "strac_covid_positive_on_ventila", "strac_total_ventilators", "strac_available_ventilators"),
+    "Staffed Bed Availability": ("Staffed Bed Availability Information", "strac_total_staffed_beds", "strac_available_staffed_beds"),
     "Multiview": ("Multiview Chart"),
     "Multistate Comparison": ("Comparison of Multiple States")
 }
 
 preset_dict = {
-    "Daily Snapshot": ["Reported Cases 7dMA","Daily Mortality 7dMA","Daily COVID ICU Census","Daily COVID Ventilator Census"],
+    "Daily Snapshot": ["otal_case_7dMA","deaths_7dMA","strac_covid_positive_in_icu","strac_covid_positive_on_ventila"],
 }
 
 ## Multiview chart options
 multiview_options = {
-    "Cumulative Reported Cases": "ReportedCum",
-    "Daily Reported Cases": "ReportedOn",
-    "Reported Cases 7dMA": "Reported7dMA",
-    "Cumulative Mortality": "DeathsCum",
-    "Daily Mortality": "Deceased",
-    "Daily Mortality 7dMA": "Deceased7dMA",
-    "Cumulative Recoveries": "Recovered",
-    "Daily Change in Recoveries": "Recovered_Daily_Change",
-    "Still Ill Patients": "StillIll",
-    "Daily COVID ICU Census": "COVIDnICU",
-    "Daily COVID Ventilator Census":"COVIDonVent",
-    "Daily Positive Tests": "DBCTestPositive",
-    "Daily Positive Tests 7dMA": "DBCTestPositive7dMA",
-    "Test Positivity Rate 7dMA (%)": "TestPositivityRate"
+    "Cumulative Reported Cases": "total_case_cumulative",
+    "Daily Reported Cases": "total_case_daily_change",
+    "Reported Cases 7dMA": "total_case_7dMA",
+    "Cumulative Mortality": "deaths_cumulative",
+    "Daily Mortality": "deaths_daily_change",
+    "Daily Mortality 7dMA": "deaths_7dMA",
+    # "Cumulative Recoveries": "Recovered",
+    # "Daily Change in Recoveries": "Recovered_Daily_Change",
+    # "Still Ill Patients": "StillIll",
+    "Daily COVID ICU Census": "strac_covid_positive_in_icu",
+    "Daily COVID Ventilator Census":"strac_covid_positive_on_ventila",
+    # "Daily Positive Tests": "DBCTestPositive",
+    # "Daily Positive Tests 7dMA": "DBCTestPositive7dMA",
+    # "Test Positivity Rate 7dMA (%)": "TestPositivityRate"
 }
 
 state_graph_types = {
@@ -73,33 +73,31 @@ def format_func(value, tick=None):
     value = round(value / 1000**num_thousands, 2)
     return f'{value:g}'+' K'[num_thousands]
 
+def callAPI():
+    r = requests.get(SA_URL)
+    jsonobj = r.json()
+    dictlist = [i['properties'] for i in jsonobj['features']]    
+    return pd.DataFrame(dictlist)
+
 ########################################################
 ############## Data Fetch Functions ####################
 ########################################################
 
 @st.cache(ttl=60*6)
 def fetch_san_antonio():
-    ## Retrieve json data
-    r = requests.get(SA_URL)
-    raw_json = r.json()
-    ## Parse json data
-    input_rows = []
-    for row in raw_json['features']:
-        input_rows.append(row['attributes'])
-    ## Load into DataFrame
-    df = pd.DataFrame(input_rows)
+    df = callAPI()
     # Set Date to index as datetime
-    df['Date'] = pd.to_datetime(df['Date'], unit='ms')
-    df.set_index('Date', inplace=True, drop=True)
+    df['reporting_date'] = pd.to_datetime(df['reporting_date'])
+    df.set_index('reporting_date', inplace=True, drop=True)
     # Get rid of dates without data
     df = df[df.index.notnull()]
     ## Create additional columns
     # Daily change in recovered cases
     df["Recovered_Daily_Change"] = (df['Recovered'] - df['Recovered'].shift(1)).dropna()
     # Reported cases 7 day moving average
-    df["Reported7dMA"] = df["ReportedOn"].rolling(7).mean()
+    df["total_case_7dMA"] = df["total_case_daily_change"].rolling(7).mean()
     # Daily Mortality 7 day moving average
-    df["Deceased7dMA"] = df["Deceased"].rolling(7).mean()
+    df["deaths_7dMA"] = df["deaths_daily_change"].rolling(7).mean()
     # Daily Positive Cases 7 day moving average
     df["DBCTestPositive7dMA"] = df["DBCTestPositive"].rolling(7).mean()
     # Test positivity rate
