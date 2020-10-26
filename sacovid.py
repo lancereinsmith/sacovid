@@ -16,6 +16,7 @@ GREEN = "#2AA12B"
 ORANGE = "#FF7F0F"
 
 SA_URL = 'https://opendata.arcgis.com/datasets/48667a23f3b7468d8cd91afce7a6d047_0.geojson'
+# SA_URL2 = 'https://opendata.arcgis.com/datasets/e7ef822b01574b7db8792b45c6555275_0.geojson'
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
@@ -76,19 +77,22 @@ def format_func(value, tick=None):
     value = round(value / 1000**num_thousands, 2)
     return f'{value:g}'+' K'[num_thousands]
 
-def callAPI():
-    r = requests.get(SA_URL)
-    jsonobj = r.json()
-    dictlist = [i['properties'] for i in jsonobj['features']]    
-    return pd.DataFrame(dictlist)
-
 ########################################################
 ############## Data Fetch Functions ####################
 ########################################################
 
 @st.cache(ttl=60*6)
 def fetch_san_antonio():
-    df = callAPI()
+    r = requests.get(SA_URL)
+    jsonobj = r.json()
+    dictlist = [i['properties'] for i in jsonobj['features']]    
+    df = pd.DataFrame(dictlist)
+
+    # r = requests.get(SA_URL2)
+    # jsonobj = r.json()
+    # dictlist = [i['properties'] for i in jsonobj['features']]    
+    # df2 = pd.DataFrame(dictlist)
+
     df.fillna(0, inplace=True)
     # Set Date to index as datetime
     df['reporting_date'] = pd.to_datetime(df['reporting_date'])
@@ -96,8 +100,6 @@ def fetch_san_antonio():
     # Get rid of dates without data
     df = df[df.index.notnull()]
     ## Create additional columns
-    # Daily change in recovered cases
-    # df["Recovered_Daily_Change"] = (df['Recovered'] - df['Recovered'].shift(1)).dropna()
     # Reported cases 7 day moving average
     df["total_case_7dMA"] = df["total_case_daily_change"].rolling(7).mean()
     # Daily Mortality 7 day moving average
@@ -238,7 +240,7 @@ def make_sa_chart(df, choice, start_date, end_date):
         l1 = df[chart_dict[choice][1]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax2, c=RED, title=f"Daily and Cumulative {choice} With 7dMA")
         l2 = df[chart_dict[choice][2]].loc[start_date : end_date + timedelta(days=1)].plot(kind='area', ax=ax1, alpha=0.3, label='_nolegend_')
         l3 = df[chart_dict[choice][3]].loc[start_date : end_date + timedelta(days=1)].plot(kind='line', ax=ax1, c=ORANGE, label=f"Daily {choice} 7d Moving Avg")
-        ax1.legend()
+        ax1.legend(loc='upper left')
         st.pyplot()
     
     elif choice in ["Recoveries"]:
