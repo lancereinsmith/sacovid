@@ -2,9 +2,8 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 import time
-
 
 ########################################################
 ############ Global constants and variables ############
@@ -124,7 +123,8 @@ def fetch_san_antonio():
 
     df.fillna(0, inplace=True)
     # Set Date to index as datetime
-    df["reporting_date"] = pd.to_datetime(df["reporting_date"])
+    df["reporting_date"] = pd.to_datetime(df["reporting_date"], utc=True)
+    df["reporting_date"] = df["reporting_date"].dt.date
     df.set_index("reporting_date", inplace=True, drop=True)
     # Get rid of dates without data
     df = df[df.index.notnull()]
@@ -406,7 +406,14 @@ def make_sa_chart(df, choice, start_date, end_date):
 def build_site():
     start_time = time.time()
     start_date = st.sidebar.date_input("Start Date", value=datetime(2020, 3, 19))
+    # t = datetime.time(6, 0)
+    # tz = pytz.timezone("utc")
+    # start_date = tz.localize(datetime.datetime.combine(start_date, t))
+
     end_date = st.sidebar.date_input("End Date", value=sa_df.index.max())
+    # t = datetime.time(6)
+    # tz = pytz.timezone("utc")
+    # end_date = tz.localize(datetime.datetime.combine(end_date, t))
 
     presets = st.sidebar.multiselect(
         "Select preset charts to display:", options=list(preset_dict.keys())
